@@ -121,6 +121,117 @@ class Results:
               self.grade
         )
 
+#REGISTER STUDENT FUNCTION
+def register_student(self):
+    print("========================================")
+    print("           REGISTER STUDENT")
+    print("========================================")
+    try:
+        student_id = int(input("Enter student's ID: "))
+    except ValueError:
+        print("Student's ID must be a number.")
+        return
+    cursor.execute("""
+    SELECT * FROM students Where student_id = &s
+    """,
+                   (student_id,)
+    )
+    existing_student = cursor.fetchone()
+    if existing_student:
+        print("Student alreaddy exists.")
+        return
+    #Proceedes to ask for student name if they don't exist
+    first_name = input("Enter Student First Name: ")
+    last_name = input("Enter Student Last Name: ")
+    program = input("Enter Program: ")
+    try:
+        semester = int(input("Enter Current Semester:"))
+    except ValueError:
+        print("Semester must be a number.")
+        return
+    if semester < 1 or semester > 8:
+        print("Semester must be between 1 and 8.")
+        return
+    student = Student(
+        student_id,
+        first_name,
+        last_name,
+        program,
+        semester
+    )
+    students[student_id] =student
+    cursor.execute(
+        """
+        INSERT INTO students (student_id, first_name, last_name, program, semester)
+        VALUES (%s, %s, %s, %s, %s)
+        """,
+
+                student_id,
+                first_name,
+                last_name,
+                program,
+                semester
+        )
+    )
+    connection.commit()
+    print("\nStudent registered successfully.")
+
+#ADD COURSE FUNCTION
+def add_course():
+
+    print("\n================================")
+    print("            ADD COURSE")
+    print("================================")
+
+    course_code = input("Enter Course Code: ")
+    cursor.execute(
+        """
+        SELECT *
+        FROM courses
+        WHERE course_code = %s
+        """,
+        (course_code,)
+    )
+    existing_course = cursor.fetchone()
+    if existing_course:
+        print("Course already exists.")
+        return
+
+    course_name = input("Enter Course Name: ")
+
+    #Using try-catch for the program not to crash if there's an input error
+    try:
+        credit_hours = int(input("Enter Credit Hours: "))
+    except ValueError:
+        print("Credit hours must be a number.")
+        return
+
+    if credit_hours <= 0:
+        print("Credit hours must be greater than 0.")
+        return
+
+    # Tuple
+    course = (
+        course_code,
+        course_name,
+        credit_hours
+    )
+
+    courses[course_code] = course
+    cursor.execute(
+        """
+        INSERT INTO courses
+        (course_code, course_name, credit_hours)
+        VALUES (%s, %s, %s)
+        """,
+        course
+    )
+
+    connection.commit()
+    print("\nCourse added successfully.")
+
+
+
 #Main Function
 def main():
     while True:
